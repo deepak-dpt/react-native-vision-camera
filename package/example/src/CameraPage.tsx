@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useRef, useState, useCallback } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { PinchGestureHandler, PinchGestureHandlerGestureEvent, TapGestureHandler } from 'react-native-gesture-handler';
 import { CameraRuntimeError, PhotoFile, useCameraDevice, useCameraFormat, useFrameProcessor, VideoFile } from 'react-native-vision-camera';
 import { Camera } from 'react-native-vision-camera';
@@ -30,6 +30,8 @@ type Props = NativeStackScreenProps<Routes, 'CameraPage'>;
 export function CameraPage({ navigation }: Props): React.ReactElement {
   const camera = useRef<Camera>(null);
   const [isCameraInitialized, setIsCameraInitialized] = useState(false);
+  const [readQr, setReadQr] = useState(true);
+  const [qrResult, setQrResult] = useState('');
   const [hasMicrophonePermission, setHasMicrophonePermission] = useState(false);
   const zoom = useSharedValue(0);
   const isPressingButton = useSharedValue(false);
@@ -153,12 +155,32 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
     console.log('re-rendering camera page without active camera');
   }
 
+  const setBarcodeJs = Worklets.createRunInJsFn(setQrResult);
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
+    const result = examplePlugin(frame);
+    if (result !== 'nope') setBarcodeJs(result);
 
-    console.log(`${frame.timestamp}: ${frame.width}x${frame.height} ${frame.pixelFormat} Frame (${frame.orientation})`);
-    examplePlugin(frame);
+    console.log('QRReader result', result);
   }, []);
+
+  useEffect(() => {
+    if (qrResult !== '' && qrResult !== 'nope') processScanQrResult(qrResult);
+  }, [qrResult]);
+
+  const processScanQrResult = (result: string) => {
+    if (result !== 'nope') {
+      setReadQr(false);
+      Alert.alert('QR contents', result, [
+        {
+          text: 'Read again',
+          onPress: () => {
+            setReadQr(true);
+          },
+        },
+      ]);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -170,10 +192,11 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
                 ref={camera}
                 style={StyleSheet.absoluteFill}
                 device={device}
-                format={format}
+                pixelFormat={'yuv'}
+                // format={device.formats.find((f) => f.pixelFormats.includes('yuv'))}
                 fps={fps}
-                hdr={enableHdr}
-                lowLightBoost={device.supportsLowLightBoost && enableNightMode}
+                //hdr={enableHdr}
+                //lowLightBoost={device.supportsLowLightBoost && enableNightMode}
                 isActive={isActive}
                 onInitialized={onInitialized}
                 onError={onError}
@@ -182,9 +205,9 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
                 enableFpsGraph={true}
                 orientation="portrait"
                 photo={true}
-                video={true}
-                audio={hasMicrophonePermission}
-                frameProcessor={frameProcessor}
+                //video={true}
+                //audio={hasMicrophonePermission}
+                frameProcessor={readQr ? frameProcessor : null}
               />
             </TapGestureHandler>
           </Reanimated.View>

@@ -2,8 +2,6 @@ package com.mrousavy.camera.example;
 
 import android.app.Application;
 
-import androidx.annotation.Nullable;
-
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactNativeHost;
@@ -14,7 +12,6 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 
 import com.mrousavy.camera.CameraPackage;
-import com.mrousavy.camera.frameprocessor.FrameProcessorPlugin;
 import com.mrousavy.camera.frameprocessor.FrameProcessorPluginRegistry;
 
 public class MainApplication extends Application implements ReactApplication {
@@ -66,5 +63,6 @@ public class MainApplication extends Application implements ReactApplication {
     }
 
     FrameProcessorPluginRegistry.addFrameProcessorPlugin("example_plugin", options -> new ExampleFrameProcessorPlugin());
+    FrameProcessorPluginRegistry.addFrameProcessorPlugin("qr_reader_plugin", options -> new QRCodeReaderFrameProcessorPlugin());
   }
 }
