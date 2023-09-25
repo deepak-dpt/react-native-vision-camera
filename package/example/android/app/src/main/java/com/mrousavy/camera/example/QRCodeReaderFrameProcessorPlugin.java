@@ -2,19 +2,15 @@ package com.mrousavy.camera.example;
 
 import android.graphics.Matrix;
 import android.media.Image;
-import android.util.Log;
+import android.os.Looper;
 
-import androidx.annotation.NonNull;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
-import com.mrousavy.camera.frameprocessor.Frame;
-import com.mrousavy.camera.frameprocessor.FrameProcessorPlugin;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.barcode.common.Barcode;
+import com.mrousavy.camera.frameprocessor.Frame;
+import com.mrousavy.camera.frameprocessor.FrameProcessorPlugin;
 import com.mrousavy.camera.parsers.Orientation;
 
 import org.jetbrains.annotations.NotNull;
@@ -24,9 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
 
 public class QRCodeReaderFrameProcessorPlugin extends FrameProcessorPlugin {
 

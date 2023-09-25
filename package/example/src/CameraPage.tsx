@@ -32,7 +32,7 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
   const [isCameraInitialized, setIsCameraInitialized] = useState(false);
   const [readQr, setReadQr] = useState(true);
   const [qrResult, setQrResult] = useState('');
-  const [hasMicrophonePermission, setHasMicrophonePermission] = useState(false);
+  const [_, setHasMicrophonePermission] = useState(false);
   const zoom = useSharedValue(0);
   const isPressingButton = useSharedValue(false);
 
@@ -54,6 +54,20 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
       priority: 1,
     },
   });
+
+  const aspectRatio3by4 = 3 / 4;
+  const aspectRatio9by16 = 9 / 16;
+
+  const format = useCameraFormat(device, [
+    {
+      fps: 60,
+      videoResolution: {
+        width: 1080,
+        height: 1920,
+      },
+      videoAspectRatio: aspectRatio3by4,
+    }, //
+  ]);
 
   //#region Memos
   const [targetFps, setTargetFps] = useState(30);
@@ -162,6 +176,7 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
     if (result !== 'nope') setBarcodeJs(result);
 
     console.log('QRReader result', result);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -193,6 +208,7 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
                 style={StyleSheet.absoluteFill}
                 device={device}
                 pixelFormat={'yuv'}
+                resizeMode={'contain'}
                 // format={device.formats.find((f) => f.pixelFormats.includes('yuv'))}
                 fps={fps}
                 //hdr={enableHdr}
@@ -207,7 +223,7 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
                 photo={true}
                 //video={true}
                 //audio={hasMicrophonePermission}
-                frameProcessor={readQr ? frameProcessor : null}
+                frameProcessor={readQr ? frameProcessor : undefined}
               />
             </TapGestureHandler>
           </Reanimated.View>
