@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useMemo } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { PinchGestureHandler, PinchGestureHandlerGestureEvent, TapGestureHandler } from 'react-native-gesture-handler';
 import { CameraRuntimeError, PhotoFile, useCameraDevice, useCameraFormat, useFrameProcessor, VideoFile } from 'react-native-vision-camera';
@@ -206,9 +206,9 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
                 ref={camera}
                 style={StyleSheet.absoluteFill}
                 device={device}
-                pixelFormat={'yuv'}
+                //pixelFormat={'yuv'}
                 resizeMode={'contain'}
-                // format={device.formats.find((f) => f.pixelFormats.includes('yuv'))}
+                format={format}
                 fps={fps}
                 //hdr={enableHdr}
                 //lowLightBoost={device.supportsLowLightBoost && enableNightMode}
@@ -220,9 +220,9 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
                 enableFpsGraph={true}
                 orientation="portrait"
                 photo={true}
-                //video={true}
+                video={true}
                 //audio={hasMicrophonePermission}
-                frameProcessor={readQr ? frameProcessor : undefined}
+                frameProcessor={frameProcessor}
               />
             </TapGestureHandler>
           </Reanimated.View>
