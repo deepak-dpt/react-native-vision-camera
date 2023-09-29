@@ -50,9 +50,20 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
   const aspectRatio9by16 = 9 / 16;
 
   const format = useCameraFormat(device, {
+    videoStabilizationMode: {
+      target: 'standard',
+      priority: 1,
+    },
+    videoResolution: {
+      target: {
+        width: 2121,
+        height: 3771,
+      },
+      priority: 3,
+    },
     videoAspectRatio: {
       target: aspectRatio3by4,
-      priority: 1,
+      priority: 2,
     },
   });
 
@@ -233,9 +244,7 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
         </PinchGestureHandler>
       )}
 
-      <Text style={{ ...styles.captureButton, fontSize: 24, color: 'red', bottom: SAFE_AREA_PADDING.paddingBottom + 96 }}>
-        {qrResult}
-      </Text>
+      <Text style={{ ...styles.captureButton, fontSize: 24, color: 'red', bottom: SAFE_AREA_PADDING.paddingBottom + 96 }}>{qrResult}</Text>
 
       <CaptureButton
         style={styles.captureButton}
