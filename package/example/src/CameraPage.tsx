@@ -30,8 +30,6 @@ type Props = NativeStackScreenProps<Routes, 'CameraPage'>;
 export function CameraPage({ navigation }: Props): React.ReactElement {
   const camera = useRef<Camera>(null);
   const [isCameraInitialized, setIsCameraInitialized] = useState(false);
-  const [readQr, setReadQr] = useState(true);
-  const [qrResult, setQrResult] = useState('');
   const [_, setHasMicrophonePermission] = useState(false);
   const zoom = useSharedValue(0);
   const isPressingButton = useSharedValue(false);
@@ -48,14 +46,10 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
 
   // camera format settings
   const device = useCameraDevice(cameraPosition);
-  const aspectRatio3by4 = 3 / 4;
+  const aspectRatio3by4 = 4 / 3;
   const aspectRatio9by16 = 9 / 16;
 
   const format = useCameraFormat(device, {
-    fps: {
-      target: 60,
-      priority: 1,
-    },
     videoAspectRatio: {
       target: aspectRatio3by4,
       priority: 1,
@@ -173,33 +167,60 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
     console.log('re-rendering camera page without active camera');
   }
 
-  const setBarcodeJs = Worklets.createRunInJsFn(setQrResult);
+  const result = useRef<string>();
+  const setBarcodeJs = Worklets.createRunInJsFn((qrResult: string) => {
+    Alert.alert(
+      'QR contents',
+      qrResult,
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            console.log('Dismissed from OK');
+            result.current = 'nope';
+          },
+        },
+      ],
+      {
+        cancelable: true,
+        onDismiss: () => {
+          console.log('Dismissed');
+          result.current = 'nope';
+        },
+      },
+    );
+  });
+
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
-    const result = examplePlugin(frame);
-    if (result !== 'nope') setBarcodeJs(result);
+    const newResult = examplePlugin(frame);
+    if (newResult !== 'nope' && newResult !== result.current) {
+      console.log('QRReader result', newResult);
+      result.current = newResult;
+      setBarcodeJs(result.current);
+    }
 
-    console.log('QRReader result', result);
+    //console.log('QRReader result', newResult);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (qrResult !== '' && qrResult !== 'nope') processScanQrResult(qrResult);
-  }, [qrResult]);
+  // useEffect(() => {
+  //   if (qrResult !== '' && qrResult !== 'nope') processScanQrResult(qrResult);
+  // }, [qrResult]);
 
-  const processScanQrResult = (result: string) => {
-    if (result !== 'nope') {
-      setReadQr(false);
-      Alert.alert('QR contents', result, [
-        {
-          text: 'Read again',
-          onPress: () => {
-            setReadQr(true);
-          },
-        },
-      ]);
-    }
-  };
+  // const processScanQrResult = (result: string) => {
+  //   if (result !== 'nope') {
+  //     setReadQr(false);
+  //     Alert.alert('QR contents', result, [
+  //       {
+  //         text: 'Read again',
+  //         onPress: () => {
+  //           setReadQr(true);
+  //         },
+  //       },
+  //     ]);
+  //   }
+  // };
 
   return (
     <View style={styles.container}>
@@ -212,7 +233,6 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
                 style={StyleSheet.absoluteFill}
                 device={device}
                 pixelFormat={'yuv'}
-                //resizeMode={'contain'}
                 format={format}
                 fps={fps}
                 //hdr={enableHdr}
@@ -224,10 +244,10 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
                 animatedProps={cameraAnimatedProps}
                 enableFpsGraph={true}
                 orientation="portrait"
-                photo={true}
-                //video={true}
+                photo={false}
+                video={true}
                 //audio={hasMicrophonePermission}
-                frameProcessor={readQr ? frameProcessor : undefined}
+                frameProcessor={frameProcessor}
               />
             </TapGestureHandler>
           </Reanimated.View>
