@@ -46,7 +46,7 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
 
   // camera format settings
   const device = useCameraDevice(cameraPosition);
-  const aspectRatio3by4 = 4 / 3;
+  const aspectRatio3by4 = 3 / 4;
   const aspectRatio9by16 = 9 / 16;
 
   const format = useCameraFormat(device, {
@@ -167,37 +167,16 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
     console.log('re-rendering camera page without active camera');
   }
 
-  const result = useRef<string>();
-  const setBarcodeJs = Worklets.createRunInJsFn((qrResult: string) => {
-    Alert.alert(
-      'QR contents',
-      qrResult,
-      [
-        {
-          text: 'OK',
-          onPress: () => {
-            console.log('Dismissed from OK');
-            result.current = 'nope';
-          },
-        },
-      ],
-      {
-        cancelable: true,
-        onDismiss: () => {
-          console.log('Dismissed');
-          result.current = 'nope';
-        },
-      },
-    );
-  });
+  const [qrResult, setQrResult] = useState<string>();
+  const setBarcodeJs = Worklets.createRunInJsFn(setQrResult);
 
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
     const newResult = examplePlugin(frame);
-    if (newResult !== 'nope' && newResult !== result.current) {
-      console.log('QRReader result', newResult);
-      result.current = newResult;
-      setBarcodeJs(result.current);
+    if (newResult !== 'nope') {
+      setBarcodeJs(newResult);
+    } else {
+      setBarcodeJs('No QR detected');
     }
 
     //console.log('QRReader result', newResult);
@@ -253,6 +232,10 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
           </Reanimated.View>
         </PinchGestureHandler>
       )}
+
+      <Text style={{ ...styles.captureButton, fontSize: 24, color: 'red', bottom: SAFE_AREA_PADDING.paddingBottom + 96 }}>
+        {qrResult}
+      </Text>
 
       <CaptureButton
         style={styles.captureButton}
